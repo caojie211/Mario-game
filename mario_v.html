@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <!--
+  思路：
+  一、创建画布
+  二、加载马里奥
+  三、利用键盘监听，实现任务移动
+  -->
+  <audio id="background-music" preload="auto" controls="button">
+      <source src="./songs/music.mp3" type="audio/mp3">
+  </audio>
+  <canvas id="demo" width="800px" height="400px" style="border:1px solid blue;margin:50px auto;display:block;">
+    Soorry,your bowser does not support the canvas.
+  </canvas>
+
+
+  <script>
+      //调用window.onload 等文件都加载完成开始执行。
+    window.onload = function() {
+      //一、把调用画师context
+      //二、给canvas加载一个背景
+      //三、将玛丽奥初始位置定位到画布上面
+      //画布，画上去的都是图片
+      var canvas = document.querySelector('#demo'),
+          context = canvas.getContext('2d'),
+          mario = new Image(),
+          background = new Image(),
+          //利用json，对象字面量
+          runner = {
+            width: 50,
+            height: 60,
+            //图片开始被裁减的位置
+            sx: 0,
+            sy: 0,
+            swidth: 50,
+            sheight: 60,
+            //图片初始位置
+            x: 0,
+            y: 338,
+            stop: false
+          };
+
+      //获取画布背景图片
+      function getBackgroundImg() {
+          background.src = './images/background.png';
+      }
+      //获取人物图片
+      function getMrioImg() {
+          mario.src = 'http://static.blueidea.com/attachment/forum/201207/03/180652md4ydy2txwotdd7l.png';
+      }
+      //背景，人物画上画布
+      function drawObject(){
+          background.onload = function() {
+            context.drawImage(background, 0, 0);
+            context.drawImage(mario, runner.sx, runner.sy, runner.swidth, runner.sheight,
+              runner.x, runner.y, runner.width, runner.height);
+        }
+      }
+      //开始游戏
+      function startGame() {
+          getBackgroundImg();
+          getMrioImg();
+          drawObject();
+      }
+      //获取方向
+      function getDirection(e) {
+        //四、创建按键，键盘监听事件
+        /*
+         *思路：
+         *    利用addEventListener（），先获取keycode数值，再确定方向
+         */
+         var keyCode = e.keyCode; //keyCode注意大小写
+         switch (keyCode) {
+             case 37:
+               direction = 'left';
+               break;
+             case 38:
+               direction = 'up';
+               break;
+             case 39:
+               direction = 'right';
+               break;
+             case 40:
+               direction = 'down';
+               break;
+         }
+         return direction;
+      }
+
+      //擦除当前画布内容
+      function clean() {
+         context.clearRect(0, 0, canvas.width, canvas.height);
+       }
+
+      //对人物停止运动进行显示设置
+      function RunnerStopAction() {
+         if(runner.stop == true) {
+           runner.sx = 0;
+         }
+       }
+
+      //再次画图，实现人物的移动。
+       function drawObjectAgain() {
+         context.drawImage(background, 0, 0);
+         context.drawImage(mario, runner.sx, runner.sy, runner.swidth, runner.sheight,
+           runner.x, runner.y, runner.width, runner.height);
+       }
+
+       //人物向右移动
+      function RunnerRightMove() {
+         clean();
+         runner.sy = 0;
+         runner.sx += 50;
+         runner.x += 5;
+         if(runner.sx >= 150) {
+           runner.sx = 0;
+         }
+         RunnerStopAction();
+         drawObjectAgain();
+       }
+
+
+
+       //人物向左移动
+      function RunnerLeftMove() {
+         clean();
+         runner.sy = 60;
+         runner.sx += 50;
+         runner.x -= 5;
+         if(runner.sx >= 150) {
+           runner.sx = 0;
+         }
+         RunnerStopAction();
+         drawObjectAgain();
+       }
+
+       //人物向上跳
+       function RunnerJumpMove() {
+         clean();
+         runner.y -= 60;
+         drawObjectAgain();
+         setTimeout(function goBack() {
+           clean();
+           runner.y += 60;
+           drawObjectAgain();
+         },500);
+       }
+
+       //执行移动
+      function playerAction(direction) {
+        if(direction === 'right') {
+          RunnerRightMove();
+        }else if(direction === 'left') {
+          RunnerLeftMove();
+        }else if(direction === 'up') {
+          RunnerJumpMove();
+        }
+      }
+
+      startGame();
+      //包含document所以监听事件，不封装到函数中。
+      //动作要再监听函数中去实现。direction变成了函数内部变量。
+      document.addEventListener('keydown', function(e) {
+        runner.stop = false; //需要改false不然就不抬脚了。
+        direction = getDirection(e);
+        console.log(direction);
+        playerAction(direction);
+      });
+      document.addEventListener('keyup', function(e) {
+        runner.stop = true;
+        playerAction(direction);
+      });
+
+
+    };
+  </script>
+</body>
+</html>
